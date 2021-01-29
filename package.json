@@ -1,0 +1,15 @@
+{
+    "name": "com.redowl.voxel",
+    "version": "1.0.0",
+    "displayName": "RedOwl - Voxel Engine",
+    "description": "RedOwl Voxel Engine",
+    "unity": "2019.4",
+    "dependencies": {
+      "com.unity.mathematics": "1.2.1"
+    },
+    "author": {
+      "name": "RedOwl",
+      "email": "support@redowlgames.com",
+      "url": "https://redowlgames.com"
+    }
+  }
