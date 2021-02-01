@@ -1,7 +1,13 @@
 {
     "name": "RedOwl.Voxel.Engine",
+    "rootNamespace": "RedOwl.Voxel.Engine",
     "references": [
-        "Unity.Mathematics"
+        "Unity.Mathematics",
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.Rendering.Hybrid",
+        "Unity.Transforms",
+        "Unity.Mathematics.Extensions"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
