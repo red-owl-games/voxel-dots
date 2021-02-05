@@ -8,6 +8,8 @@ namespace RedOwl.Voxel.Engine
 {
     public class VoxelChunkBuilder : IDisposable
     {
+        public static Dictionary<int, MeshCollider> _table;
+        
         //public Mesh Mesh => _mesh;
         public Material Material => _materials[0];
 
@@ -16,13 +18,16 @@ namespace RedOwl.Voxel.Engine
         private readonly List<Vector3> _vertices;
         private readonly List<List<int>> _triangles;
         private readonly List<Vector2> _uvs;
+        
+        private MeshCollider _meshCollider;
 
-        // private GameObject _chunkRenderer;
-        // private MeshFilter _meshFilter;
-        // private MeshRenderer _meshRenderer;
-        // private MeshCollider _meshCollider;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void Initialize()
+        {
+            _table = new Dictionary<int, MeshCollider>();
+        }
 
-        public VoxelChunkBuilder(Material[] materials)
+        public VoxelChunkBuilder(float3 point, Material[] materials)
         {
             // _mesh = new Mesh();
             _materials = materials;
@@ -31,17 +36,26 @@ namespace RedOwl.Voxel.Engine
             EnsureSubMesh(_materials.Length);
             _uvs = new List<Vector2>(VoxelWorld.CHUNK_VOXEL_COUNT * 6 * 4);
 
-            //_chunkRenderer = new GameObject($"Chunk[{index}]({point})");
-            //_chunkRenderer.transform.position = new Vector3(point.x, point.y, point.z);
+            EnsureCollider(point);
+        }
+
+        private void EnsureCollider(float3 point)
+        {
+            var index = VoxelWorld.ChunkIndexFromWorldPos((int3) math.floor(point));
+            if (_table.TryGetValue(index, out var collider))
+            {
+                _meshCollider = collider;
+                return;
+            }
+            var go = new GameObject($"Chunk({point})");
+            go.transform.position = new Vector3(point.x, point.y, point.z);
             
             // _meshFilter = _chunkRenderer.AddComponent<MeshFilter>();
             // _meshRenderer = _chunkRenderer.AddComponent<MeshRenderer>();
-            // _meshCollider = _chunkRenderer.AddComponent<MeshCollider>();
+            _meshCollider = go.AddComponent<MeshCollider>();
 
-            // Rebuild();
+            _table.Add(index, _meshCollider);
         }
-
-        
 
         private void EnsureSubMesh(int index)
         {
@@ -102,6 +116,7 @@ namespace RedOwl.Voxel.Engine
                 mesh.SetTriangles(_triangles[i], i, false);
             }
             mesh.RecalculateNormals();
+            _meshCollider.sharedMesh = mesh;
             return mesh;
         }
 

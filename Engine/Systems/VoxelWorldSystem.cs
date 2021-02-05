@@ -1,4 +1,5 @@
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace RedOwl.Voxel.Engine
 {
@@ -10,6 +11,7 @@ namespace RedOwl.Voxel.Engine
     [UpdateInGroup(typeof(VoxelEngineSystemGroup))]
     public class VoxelWorldSystem : SystemBase
     {
+        
         private EndSimulationEntityCommandBufferSystem _ecbSystem;
         
         protected override void OnCreate()
@@ -19,12 +21,7 @@ namespace RedOwl.Voxel.Engine
 
         protected override void OnUpdate()
         {
-            // var ecb = _ecbSystem.CreateCommandBuffer();
-            // _ecbSystem.AddJobHandleForProducer(Dependency);
+
         }
-
-
-
-
     }
 }

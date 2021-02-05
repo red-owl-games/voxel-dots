@@ -358,7 +358,8 @@ namespace RedOwl.Voxel.Engine
 	        position.x < 0 || position.x > CHUNK_SIZE_XZ_MINUS_ONE ||
 	        position.y < 0 || position.y > CHUNK_SIZE_Y_MINUS_ONE ||
 	        position.z < 0 || position.z > CHUNK_SIZE_XZ_MINUS_ONE;
-        
+
+        public static bool IsOutsideWorld(float3 position) => IsOutsideWorld((int3)math.floor(position));
         public static bool IsOutsideWorld(int3 position) =>
 	        position.x < 0 || position.x > WORLD_BOUNDS_XZ_MINUS_ONE ||
 	        position.y < 0 || position.y > WORLD_BOUNDS_Y_MINUS_ONE ||
@@ -377,6 +378,31 @@ namespace RedOwl.Voxel.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3Int Int3ToVector3Int(int3 position) => new Vector3Int(position.x, position.y, position.z);
         
+        #endregion
+
+        #region Tests
+        
+        public struct VoxelWorldCheck
+        {
+	        private int _xz_bounds;
+	        private int _y_bounds;
+
+	        public VoxelWorldCheck(bool unused)
+	        {
+		        _xz_bounds = VoxelWorld.WORLD_BOUNDS_XZ_MINUS_ONE;
+		        _y_bounds = VoxelWorld.WORLD_BOUNDS_Y_MINUS_ONE;
+	        }
+
+	        public bool IsOutsideWorld(float3 position) => IsOutsideWorld((int3)math.floor(position));
+	        public bool IsOutsideWorld(int3 position) =>
+		        position.x < 0 || position.x > _xz_bounds ||
+		        position.y < 0 || position.y > _y_bounds ||
+		        position.z < 0 || position.z > _xz_bounds;
+        }
+
+        public static VoxelWorldCheck WorldTest() => new VoxelWorldCheck(true);
+
+
         #endregion
     }
 }

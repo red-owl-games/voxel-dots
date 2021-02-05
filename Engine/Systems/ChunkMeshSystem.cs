@@ -9,16 +9,27 @@ namespace RedOwl.Voxel.Engine
     [UpdateInGroup(typeof(VoxelEngineSystemGroup)), UpdateAfter(typeof(VoxelWorldSystem))]
     public class ChunkMeshSystem : SystemBase
     {
+        private EndVoxelEngineCommandBufferSystem _ecbSystem;
+        
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+            _ecbSystem = ECSX.World.GetOrCreateSystem<EndVoxelEngineCommandBufferSystem>();
+        }
+
         protected override void OnUpdate()
         {
             if (!VoxelWorld.IsInitialized) return;
             var material = VoxelWorld.Engine.VoxelMaterials;
-            var chunks = GetComponentDataFromEntity<VoxelChunk>(true);
-            var voxels = GetBufferFromEntity<Voxel>(true);
-            var ecbSystem = ECSX.World.GetOrCreateSystem<EndVoxelEngineCommandBufferSystem>();
-            Entities.WithoutBurst().WithAll<VoxelChunkDirtyTag>().ForEach((Entity entity, in VoxelChunk chunk, in Translation translation) =>
+            var ecb = _ecbSystem.CreateCommandBuffer();
+            Entities.WithAll<VoxelChunk>().WithoutBurst().ForEach((Entity entity, in Translation translation) =>
             {
-                // if (chunk.State != VoxelChunkStates.Dirty) return;
+                
+                var chunks = GetComponentDataFromEntity<VoxelChunk>(true);
+                var chunk = chunks[entity];
+                if (chunk.State != VoxelChunkStates.Dirty) return;
+                Debug.Log($"Chunk '{chunk}' IsDirty");
+                var voxels = GetBufferFromEntity<Voxel>(true);
 
                 var chunkPoint = (int3) translation.Value;
                 var chunkVoxels = voxels[entity];
@@ -36,7 +47,7 @@ namespace RedOwl.Voxel.Engine
                 var hasRightNeighbor = chunk.rightNeighbor != Entity.Null;
                 var rightNeighborVoxels = voxels[hasRightNeighbor ? chunk.rightNeighbor : entity];
 
-                var builder = new VoxelChunkBuilder(material);
+                var builder = new VoxelChunkBuilder(translation.Value, material);
                 //var builder = VoxelWorld.Engine.ChunkBuilders[chunk.Id];
                 //builder.Clear();
                 for (int i = 0; i < chunkVoxels.Length; i++)
@@ -102,14 +113,12 @@ namespace RedOwl.Voxel.Engine
                 var renderBounds = EntityManager.GetComponentData<RenderBounds>(entity);
                 var bounds = mesh.bounds;
                 renderBounds.Value = new AABB { Center = bounds.center, Extents = bounds.extents};
-                var ecb = ecbSystem.CreateCommandBuffer();
+                
                 ecb.SetSharedComponent(entity, renderMesh);
                 ecb.SetComponent(entity, renderBounds);
-                ecb.RemoveComponent<VoxelChunkDirtyTag>(entity);
-                ecb.AddComponent<VoxelChunkMeshReadyTag>(entity);
-                
-                //chunk.State = VoxelChunkStates.MeshReady;
 
+                chunk.State = VoxelChunkStates.MeshReady;
+                ecb.SetComponent(entity, chunk);
             }).Run();
         }
     }
